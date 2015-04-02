@@ -1,0 +1,50 @@
+# sourcefile /etc/postfix/main.cf
+# See /usr/share/postfix/main.cf.dist for a commented, more complete version
+ 
+smtpd_banner = $myhostname ESMTP $mail_name (Debian/GNU)
+biff = no
+ 
+append_dot_mydomain = no
+ 
+# Uncomment the next line to generate "delayed mail" warnings
+delay_warning_time = 4h
+ 
+readme_directory = no
+ 
+# TLS parameters
+smtpd_tls_cert_file=/etc/dovecot/dovecot.pem
+smtpd_tls_key_file=/etc/dovecot/private/dovecot.pem
+smtpd_use_tls=yes
+smtpd_tls_auth_only = yes
+ 
+smtpd_recipient_restrictions = \
+  permit_sasl_authenticated,\
+  permit_mynetworks,\
+  reject_unauth_destination\
+
+# myhostname = YOURSHOSTNAME
+myhostname = mail.example.com
+ 
+alias_maps = hash:/etc/aliases
+alias_database = hash:/etc/aliases
+myorigin = /etc/mailname
+mydestination = localhost
+relayhost =
+mynetworks = 127.0.0.0/8 [::ffff:127.0.0.0]/104 [::1]/128
+mailbox_size_limit = 0
+recipient_delimiter = +
+inet_interfaces = all
+ 
+#Handing off local delivery to Dovecot's LMTP, and telling it where to store mail
+virtual_transport = lmtp:unix:private/dovecot-lmtp
+ 
+#Virtual domains, users, and aliases
+virtual_uid_maps = static:5000
+virtual_gid_maps = static:5000
+virtual_alias_maps = mysql:/etc/postfix/mysql/virtual_alias_maps.cf
+virtual_mailbox_domains = mysql:/etc/postfix/mysql/virtual_domains_maps.cf
+virtual_mailbox_maps = mysql:/etc/postfix/mysql/virtual_mailbox_maps.cf
+ 
+# from http://ubuntuforums.org/showthread.php?t=2168820
+smtpd_sasl_type = dovecot
+smtpd_sasl_path = private/auth
